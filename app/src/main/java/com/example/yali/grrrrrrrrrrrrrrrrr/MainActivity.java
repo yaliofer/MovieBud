@@ -175,21 +175,6 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                 buffer.append(chars, 0, c);
             }
             return buffer.toString();
-            /*
-            URL url = new URL(urlString);
-            Log.i("Error not here", "!");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            Log.i("Error not there", "!");
-            connection.setDoOutput(true);
-            connection.setInstanceFollowRedirects(false);
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("charset", "utf-8");
-            connection.connect();
-            Log.i("Error not in","Connect");
-            InputStream inStream = connection.getInputStream();
-            return inStream.toString();
-            */
         }
         catch (IOException e)
         {
