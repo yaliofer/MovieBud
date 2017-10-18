@@ -102,8 +102,6 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                 Log.i("Prove: ", t.toString());
                 Log.i("Number: ", ret.size()+"");
             }
-
-
             //Handle TV
             ans = readURL(params[1]);
             Log.i("Success! ", "Data successfully recovered from TMDb");
