@@ -35,6 +35,10 @@ public class Media {
             "https://api.themoviedb.org/3/movie/popular?api_key=eac80b61f4b6d4103fab65bae01e44ac&language=en-US";
     private static String popularTVQuery =
             "https://api.themoviedb.org/3/tv/popular?api_key=eac80b61f4b6d4103fab65bae01e44ac&language=en-US";
+    private static String configurationQuery =
+            "https://api.themoviedb.org/3/configuration?api_key=eac80b61f4b6d4103fab65bae01e44ac";
+    private static String baseURL = "";
+    private static String posterSize = "";
     //Constructors
 
     public Media(String type, String title, long id, String posterPath, double rating, String language) {
@@ -127,6 +131,26 @@ public class Media {
     public static void setPopularTVQuery(String popularTVQuery) {
         Media.popularTVQuery = popularTVQuery;
     }
+
+    public static String getConfigurationQuery() {
+        return configurationQuery;
+    }
+
+    public static String getBaseURL() {
+        return baseURL;
+    }
+
+    public static String getPosterSize() {
+        return posterSize;
+    }
+
+    public static void setBaseURL(String baseURL) {
+        Media.baseURL = baseURL;
+    }
+
+    public static void setPosterSize(String posterSize) {
+        Media.posterSize = posterSize;
+    }
     //Other Methods
 
     @Override
@@ -161,78 +185,3 @@ public class Media {
         }
     }
 }
-    /*
-    //Static method to get 30 random movies or tv shows
-    public static ArrayList<Media> randomiseMedia ()
-    {
-        ArrayList<Media> res = new ArrayList<>(30);
-        try
-        {
-            int numMovies, numTV;
-            numMovies = (int)(Math.random()*30+1);
-            numTV = 30-numMovies;
-            //Handle Movies
-            String fq = Media.popularMovieQuery;
-            String ans = "";
-            //String ans = readURL(fq); //Asynctask this
-            new getJsonTask().execute(ans);
-            /*
-            getJsonTask g = new getJsonTask();
-            g.doInBackground();
-             */
-            /*
-            Log.i("Fine till", "Here");
-            Log.i("Result:", "Ans:"+ans);
-            JSONObject obj = new JSONObject(ans);
-            JSONArray result = obj.getJSONArray("results");
-            Log.i("Done", "Done");
-        }
-        catch (Exception e)
-        {
-            Log.e("Error", "Shit");
-        }
-        return res;
-    }
-
-}
-
-
-class getJsonTask extends AsyncTask <String, Integer, String>
-{
-
-    @Override
-    protected String doInBackground(String... params)
-    {
-        BufferedReader read = null;
-        try
-        {
-            URL url = new URL (params[0]);
-            read = new BufferedReader(new InputStreamReader(url.openStream()));
-            StringBuffer buffer = new StringBuffer();
-            int c;
-            char [] chars = new char [1024];
-            while ((c=read.read(chars))!=-1)
-            {
-                buffer.append(chars, 0, c);
-            }
-            return buffer.toString();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally
-        {
-            if (read!=null)
-            {
-                try {
-                    read.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return null;
-    }
-
-}
-            */

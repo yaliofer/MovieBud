@@ -1,4 +1,5 @@
 package com.example.yali.grrrrrrrrrrrrrrrrr;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -25,6 +27,17 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     public TextView tv;
+    private static String poster = "/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg";
+
+    public static void setPoster (String set)
+    {
+        MainActivity.poster = set;
+    }
+
+    public static String getPoster ()
+    {
+        return MainActivity.poster;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -33,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         tv = (TextView) findViewById(R.id.tv);
         new GetMediaTask().execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery());
+        new GetPhotoTask().execute(Media.getConfigurationQuery(), MainActivity.poster);
         //Toast.makeText(getApplicationContext(), GetMediaTask.text, Toast.LENGTH_SHORT).show();
     }
 
@@ -59,8 +73,8 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             Log.i("Answer: ", ans);
             //Parse the JSON
             JSONObject parentObject = new JSONObject(ans);
-            JSONArray results = null;
-            JSONObject obj = new JSONObject();
+            JSONArray results;
+            JSONObject obj;
             Media temp;
             int i, idRaw, ratingRaw;
             String title, path;
@@ -143,6 +157,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                 Log.i("Number: ", ret.size()+"");
                 t = ret.get(7);
                 Log.i("Prove:" , t.toString());
+                MainActivity.setPoster(t.getPosterPath());
             }
         }
         catch (Exception e)
@@ -153,7 +168,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     }
 
 
-    private static String readURL(String urlString) throws IOException {
+    public static String readURL(String urlString) throws IOException {
         BufferedReader read = null;
         try {
             URL url = new URL(urlString);
@@ -187,5 +202,54 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             }
         }
         return "";
+    }
+}
+
+class GetPhotoTask extends AsyncTask <String, Integer, Image>
+{
+
+    @Override
+    protected Image doInBackground(String... params)
+    {
+        Image image = null;
+        String baseURL, posterSize;
+        JSONArray sizes;
+        try
+        {
+            Log.i("Downloading Poster Starting", "Now");
+            String ans = GetMediaTask.readURL(params[0]);
+            //GET URLs
+            Log.i("Success! ", "Data successfully recovered from TMDb");
+            Log.i("JSON:", ans);
+            JSONObject object = new JSONObject(ans);
+            JSONObject images;
+            if (object.has("images"))
+            {
+                images = object.getJSONObject("images");
+                Log.i("Retrieved", "JSON images file");
+                Log.i("JSON:", images.toString());
+                baseURL = images.getString("secure_base_url");
+                sizes = images.getJSONArray("poster_sizes");
+                posterSize = sizes.get(sizes.length()-2).toString();
+                Log.i("Base URL", baseURL);
+                Log.i("Size", posterSize);
+                Media.setBaseURL(baseURL);
+                Media.setPosterSize(posterSize);
+            }
+            //Build Poster URL
+            String query;
+            query = Media.getBaseURL()+Media.getPosterSize()+params[1];
+            Log.i("Poster URL", query);
+            //Downloading the Image
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return image;
     }
 }
