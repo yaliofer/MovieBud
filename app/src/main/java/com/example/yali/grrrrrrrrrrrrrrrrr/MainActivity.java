@@ -1,4 +1,6 @@
 package com.example.yali.grrrrrrrrrrrrrrrrr;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -6,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,11 +21,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,14 +44,25 @@ public class MainActivity extends AppCompatActivity {
         return MainActivity.poster;
     }
 
+    ArrayList<Media> list = null;
+    ImageView imageView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        tv = (TextView) findViewById(R.id.tv);
-        new GetMediaTask().execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery());
-        new GetPhotoTask().execute(Media.getConfigurationQuery(), MainActivity.poster);
+        try
+        {
+            list =  new GetMediaTask().execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery()).get();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        Media temp = list.get(5);
+        imageView = (ImageView) findViewById(R.id.imageView);
+        imageView.setImageBitmap(temp.getPoster());
         //Toast.makeText(getApplicationContext(), GetMediaTask.text, Toast.LENGTH_SHORT).show();
     }
 
@@ -59,14 +75,38 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     protected ArrayList<Media> doInBackground(String... params)
     {
         ArrayList<Media> ret = new ArrayList<Media>();
+        String baseURL, posterSize;
+        JSONArray sizes;
+        Bitmap bitmap;
         try
         {
+            //Handle Configurations
+            Log.i("Downloading Poster Starting", "Now");
+            String ans = GetMediaTask.readURL(params[2]);
+            //GET URLs
+            Log.i("Success! ", "Data successfully recovered from TMDb");
+            Log.i("JSON:", ans);
+            JSONObject object = new JSONObject(ans);
+            JSONObject images;
+            if (object.has("images"))
+            {
+                images = object.getJSONObject("images");
+                Log.i("Retrieved", "JSON images file");
+                Log.i("JSON:", images.toString());
+                baseURL = images.getString("secure_base_url");
+                sizes = images.getJSONArray("poster_sizes");
+                posterSize = sizes.get(sizes.length()-2).toString();
+                Log.i("Base URL", baseURL);
+                Log.i("Size", posterSize);
+                Media.setBaseURL(baseURL);
+                Media.setPosterSize(posterSize);
+            }
+            //Handle Media
             Log.i("Starting task", "Now");
             int numMovies, numTV;
             numMovies = 15;
             numTV = 15;
             //Handle Movies
-            String ans;
             Log.i("Attempting to read URL", "Now");
             ans = readURL(params[0]);
             Log.i("Success! ", "Data successfully recovered from TMDb");
@@ -108,7 +148,16 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                         rating = (double)obj.get("vote_average");
                         temp = new Media ("movie", title, (long)idRaw, path, rating, language);
                     }
-                    //rating = (double)obj.get("vote_average");
+                    //Building Poster URL
+                    String query;
+                    query = Media.getBaseURL()+Media.getPosterSize()+temp.getPosterPath();
+                    Log.i("Poster URL", query);
+                    //Downloading the Image
+                    bitmap = downlaodBitmap(query);
+                    //Adding image to object
+                    temp.setPoster(bitmap);
+                    Log.i("Done", "Added Image Successfully to Media"+temp.getTitle());
+                    //Add To ArrayList
                     ret.add(temp);
                 }
                 Log.i("Success! ", "Successfully added all the movies");
@@ -149,6 +198,16 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                         rating = (double)obj.get("vote_average");
                         temp = new Media ("tv", title, (long)idRaw, path, rating, language);
                     }
+                    //Building Poster URL
+                    String query;
+                    query = Media.getBaseURL()+Media.getPosterSize()+temp.getPosterPath();
+                    Log.i("Poster URL", query);
+                    //Downloading the Image
+                    bitmap = downlaodBitmap(query);
+                    //Adding image to object
+                    temp.setPoster(bitmap);
+                    Log.i("Done", "Added Image Successfully to Media"+temp.getTitle());
+                    //Add To ArrayList
                     ret.add(temp);
                 }
                 Log.i("Success!", "Added TV Shows");
@@ -165,6 +224,31 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             e.printStackTrace();
         }
         return ret;
+    }
+
+    public static Bitmap downlaodBitmap (String url)
+    {
+        Bitmap bitmap = null;
+        try
+        {
+            //Downloading the Image
+            URL imageURL = new URL (url);
+            HttpURLConnection connection = (HttpURLConnection) imageURL.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            bitmap = BitmapFactory.decodeStream(input);
+            return bitmap;
+        }
+        catch (MalformedURLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return bitmap;
     }
 
 
@@ -198,13 +282,12 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         finally {
             if (read != null) {
                 read.close();
-                Log.i("Error in getting the JSON", "Try again");
             }
         }
         return "";
     }
 }
-
+/*
 class GetPhotoTask extends AsyncTask <String, Integer, Image>
 {
 
@@ -252,4 +335,5 @@ class GetPhotoTask extends AsyncTask <String, Integer, Image>
         }
         return image;
     }
-}
+    */
+//}

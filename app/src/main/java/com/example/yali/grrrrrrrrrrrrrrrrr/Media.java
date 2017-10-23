@@ -1,5 +1,6 @@
 package com.example.yali.grrrrrrrrrrrrrrrrr;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.util.JsonReader;
@@ -27,7 +28,7 @@ public class Media {
     private String posterPath;
     private double rating;
     private String language;
-    private Image poster;
+    private Bitmap poster;
     //Static Parameters
     private static String apiKey =
             "eac80b61f4b6d4103fab65bae01e44ac";
@@ -151,6 +152,15 @@ public class Media {
     public static void setPosterSize(String posterSize) {
         Media.posterSize = posterSize;
     }
+
+    public Bitmap getPoster() {
+        return poster;
+    }
+
+    public void setPoster(Bitmap poster) {
+        this.poster = poster;
+    }
+
     //Other Methods
 
     @Override
