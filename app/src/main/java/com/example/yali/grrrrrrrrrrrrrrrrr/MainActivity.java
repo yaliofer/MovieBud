@@ -303,7 +303,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         finally {
             if (read != null) {
                 read.close();
-            }//
+            }//a
         }
         return "";
     }
