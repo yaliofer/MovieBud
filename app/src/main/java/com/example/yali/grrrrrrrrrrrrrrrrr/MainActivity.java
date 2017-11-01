@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -31,39 +33,31 @@ import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
-    public TextView tv;
-    private static String poster = "/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg";
-
-    public static void setPoster (String set)
-    {
-        MainActivity.poster = set;
-    }
-
-    public static String getPoster ()
-    {
-        return MainActivity.poster;
-    }
-
-    ArrayList<Media> list = null;
+    static ArrayList<Media> list = null;
     ImageView imageView;
+    ProgressBar progressBar;
+
+    public static void updateList (ArrayList<Media> media)
+    {
+        MainActivity.list.addAll(media);
+        media.clear();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        try
-        {
-            list =  new GetMediaTask().execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery()).get();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        Media temp = list.get(5);
+        MainActivity.list = new ArrayList<>(30);
         imageView = (ImageView) findViewById(R.id.imageView);
+        imageView.setVisibility(View.GONE);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        GetMediaTask mediaTask =  new GetMediaTask(progressBar, imageView);
+        mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
+        /*Media temp = list.get(4);
         imageView.setImageBitmap(temp.getPoster());
-        //Toast.makeText(getApplicationContext(), GetMediaTask.text, Toast.LENGTH_SHORT).show();
+        imageView.setVisibility(View.VISIBLE);
+        Toast.makeText(getApplicationContext(), list.size(), Toast.LENGTH_SHORT).show();*/
     }
 
 
@@ -71,6 +65,23 @@ public class MainActivity extends AppCompatActivity {
 
 class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
 {
+    private ProgressBar progressBar;
+    private ImageView imageView;
+
+    public GetMediaTask(ProgressBar pb, ImageView im) {
+        super();
+        this.progressBar = pb;
+        this.imageView = im;
+    }
+
+    @Override
+    protected void onPreExecute()
+    {
+        super.onPreExecute();
+        this.progressBar.setVisibility(View.VISIBLE);
+        this.imageView.setVisibility(View.GONE);
+    }
+
     @Override
     protected ArrayList<Media> doInBackground(String... params)
     {
@@ -216,7 +227,6 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                 Log.i("Number: ", ret.size()+"");
                 t = ret.get(7);
                 Log.i("Prove:" , t.toString());
-                MainActivity.setPoster(t.getPosterPath());
             }
         }
         catch (Exception e)
@@ -224,6 +234,17 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             e.printStackTrace();
         }
         return ret;
+    }
+
+    @Override
+    protected void onPostExecute(ArrayList<Media> media)
+    {
+        super.onPostExecute(media);
+        Media temp = media.get(4);
+        MainActivity.updateList(media);
+        imageView.setImageBitmap(temp.getPoster());
+        imageView.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
     }
 
     public static Bitmap downlaodBitmap (String url)
