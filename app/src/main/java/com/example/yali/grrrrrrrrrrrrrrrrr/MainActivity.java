@@ -1,35 +1,25 @@
 package com.example.yali.grrrrrrrrrrrrrrrrr;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-
-import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -54,10 +44,6 @@ public class MainActivity extends AppCompatActivity {
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         GetMediaTask mediaTask =  new GetMediaTask(progressBar, imageView);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
-        /*Media temp = list.get(4);
-        imageView.setImageBitmap(temp.getPoster());
-        imageView.setVisibility(View.VISIBLE);
-        Toast.makeText(getApplicationContext(), list.size(), Toast.LENGTH_SHORT).show();*/
     }
 
 
@@ -68,11 +54,12 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     private ProgressBar progressBar;
     private ImageView imageView;
 
-    public GetMediaTask(ProgressBar pb, ImageView im) {
+     GetMediaTask(ProgressBar pb, ImageView im)
+     {
         super();
         this.progressBar = pb;
         this.imageView = im;
-    }
+     }
 
     @Override
     protected void onPreExecute()
@@ -85,7 +72,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     @Override
     protected ArrayList<Media> doInBackground(String... params)
     {
-        ArrayList<Media> ret = new ArrayList<Media>();
+        ArrayList<Media> ret = new ArrayList<>();
         String baseURL, posterSize;
         JSONArray sizes;
         Bitmap bitmap;
@@ -182,7 +169,6 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             Log.i("Answer: ", ans);
             //Parse the JSON
             parentObject = new JSONObject(ans);
-            results = null;
             if (parentObject.has("results"))
             {
                 results = parentObject.getJSONArray("results");
@@ -247,7 +233,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         progressBar.setVisibility(View.GONE);
     }
 
-    public static Bitmap downlaodBitmap (String url)
+    private static Bitmap downlaodBitmap (String url)
     {
         Bitmap bitmap = null;
         try
@@ -260,12 +246,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             InputStream input = connection.getInputStream();
             bitmap = BitmapFactory.decodeStream(input);
             return bitmap;
-        }
-        catch (MalformedURLException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
             e.printStackTrace();
         }
