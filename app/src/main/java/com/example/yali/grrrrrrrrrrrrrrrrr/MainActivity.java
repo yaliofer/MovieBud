@@ -39,8 +39,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         MainActivity.list = new ArrayList<>(30);
-        imageView = (ImageView) findViewById(R.id.imageView);
-        imageView.setVisibility(View.GONE);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         GetMediaTask mediaTask =  new GetMediaTask(progressBar, imageView);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
@@ -66,7 +64,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     {
         super.onPreExecute();
         this.progressBar.setVisibility(View.VISIBLE);
-        this.imageView.setVisibility(View.GONE);
+        //this.imageView.setVisibility(View.GONE);
     }
 
     @Override
@@ -228,8 +226,8 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         super.onPostExecute(media);
         Media temp = media.get(4);
         MainActivity.updateList(media);
-        imageView.setImageBitmap(temp.getPoster());
-        imageView.setVisibility(View.VISIBLE);
+        //imageView.setImageBitmap(temp.getPoster());
+        //imageView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);
     }
 
