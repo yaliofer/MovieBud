@@ -8,7 +8,7 @@
 
     <ProgressBar
         android:id="@+id/progressBar"
-        style="@android:style/Widget.Material.Light.ProgressBar.Horizontal"
+        style="@android:style/Widget.Material.Light.ProgressBar"
         android:layout_width="285dp"
         android:layout_height="38dp"
         android:layout_centerHorizontal="true"
@@ -49,6 +49,9 @@
             app:elevationEnabled="true"
             app:swipeEnabled="true"
             app:swipeDirection="freedom_no_bottom"
+            app:leftOverlay="@layout/overlay_left"
+            app:rightOverlay="@layout/overlay_right"
+            app:topOverlay="@layout/overlay_top"
             />
 
     </RelativeLayout>

@@ -1,23 +1,10 @@
 package com.example.yali.grrrrrrrrrrrrrrrrr;
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.media.Image;
-import android.os.AsyncTask;
-import android.util.JsonReader;
-import android.util.Log;
-import android.widget.ImageButton;
-import android.widget.Toast;
 
-import java.net.MalformedURLException;
-import java.util.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-
-import org.json.*;
-
-import static android.widget.Toast.LENGTH_SHORT;
 
 
 public class Media {
@@ -27,6 +14,7 @@ public class Media {
     private long id;
     private String posterPath;
     private double rating;
+    //Add Genre
     private String language;
     private Bitmap poster;
     //Static Parameters

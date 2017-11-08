@@ -28,16 +28,10 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     static ArrayList<Media> list = null;
-    ImageView imageView;
     ProgressBar progressBar;
     CardStackView cardStackView;
     MediaCardAdapter adapter;
-
-    public static void updateList (ArrayList<Media> media)
-    {
-        MainActivity.list.addAll(media);
-        media.clear();
-    }
+    //Add Genres
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -126,9 +120,8 @@ public class MainActivity extends AppCompatActivity {
         final MediaCardAdapter adapter = new MediaCardAdapter(getApplicationContext());
         GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, adapter);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
-        /*adapter.addAll(MainActivity.list);
-        return adapter;*/
     }
+
 
 }
 
