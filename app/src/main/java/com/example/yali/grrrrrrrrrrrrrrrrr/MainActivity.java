@@ -2,12 +2,16 @@ package com.example.yali.grrrrrrrrrrrrrrrrr;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+
+import com.yuyakaido.android.cardstackview.CardStackView;
+import com.yuyakaido.android.cardstackview.SwipeDirection;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
     static ArrayList<Media> list = null;
     ImageView imageView;
     ProgressBar progressBar;
+    CardStackView cardStackView;
+    MediaCardAdapter adapter;
 
     public static void updateList (ArrayList<Media> media)
     {
@@ -40,8 +46,85 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         MainActivity.list = new ArrayList<>(30);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        GetMediaTask mediaTask =  new GetMediaTask(progressBar, imageView);
+        cardStackView = (CardStackView)findViewById(R.id.cardStackView);
+        setup();
+        reload();
+    }
+
+    public void setup ()
+    {
+        cardStackView.setCardEventListener(new CardStackView.CardEventListener()
+        {
+            @Override
+            public void onCardDragging(float percentX, float percentY)
+            {
+                Log.d("CardStackView", "onCardDragging");
+            }
+
+            @Override
+            public void onCardSwiped(SwipeDirection direction)
+            {
+                Log.d("CardStackView", "onCardSwiped: " + direction.toString());
+                Log.d("CardStackView", "topIndex: " + cardStackView.getTopIndex());
+                if (cardStackView.getTopIndex() == adapter.getCount() - 5) {
+                    Log.d("CardStackView", "Paginate: " + cardStackView.getTopIndex());
+                    paginate();
+                }
+
+            }
+
+            @Override
+            public void onCardReversed()
+            {
+                Log.d("CardStackView", "onCardReversed");
+            }
+
+            @Override
+            public void onCardMovedToOrigin()
+            {
+                Log.d("CardStackView", "onCardMovedToOrigin");
+            }
+
+            @Override
+            public void onCardClicked(int index)
+            {
+                Log.d("CardStackView", "onCardClicked: " + index);
+            }
+        });
+    }
+
+    public void reload ()
+    {
+        cardStackView.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run()
+            {
+                adapter = createMediaCardAdapter();
+                cardStackView.setAdapter(adapter);
+                cardStackView.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.GONE);
+            }
+        }, 1000);
+    }
+
+    private void paginate ()
+    {
+        cardStackView.setPaginationReserved();
+        GetMediaTask mediaTask = new GetMediaTask (progressBar);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
+        adapter.addAll(MainActivity.list);
+        adapter.notifyDataSetChanged();
+    }
+
+    private MediaCardAdapter createMediaCardAdapter ()
+    {
+        final MediaCardAdapter adapter = new MediaCardAdapter(getApplicationContext());
+        GetMediaTask mediaTask =  new GetMediaTask(progressBar);
+        mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
+        adapter.addAll(MainActivity.list);
+        return adapter;
     }
 
 }
@@ -50,7 +133,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
 {
     private ProgressBar progressBar;
 
-     GetMediaTask(ProgressBar pb, ImageView im)
+     GetMediaTask(ProgressBar pb)
      {
         super();
         this.progressBar = pb;
@@ -207,8 +290,6 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         super.onPostExecute(media);
         Media temp = media.get(4);
         MainActivity.updateList(media);
-        //imageView.setImageBitmap(temp.getPoster());
-        //imageView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);
     }
 
