@@ -44,15 +44,16 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        MainActivity.list = new ArrayList<>(30);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        cardStackView = (CardStackView)findViewById(R.id.cardStackView);
         setup();
         reload();
     }
 
     public void setup ()
     {
+        MainActivity.list = new ArrayList<>(30);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        cardStackView = (CardStackView)findViewById(R.id.cardStackView);
+
         cardStackView.setCardEventListener(new CardStackView.CardEventListener()
         {
             @Override
@@ -95,16 +96,18 @@ public class MainActivity extends AppCompatActivity {
 
     public void reload ()
     {
+        Log.i("Reload", "Starting");
         cardStackView.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run()
             {
-                adapter = createMediaCardAdapter();
-                cardStackView.setAdapter(adapter);
+                adapter = null;
+                createMediaCardAdapter();
+                /*cardStackView.setAdapter(adapter);
                 cardStackView.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
+                progressBar.setVisibility(View.GONE);*/
             }
         }, 1000);
     }
@@ -112,19 +115,19 @@ public class MainActivity extends AppCompatActivity {
     private void paginate ()
     {
         cardStackView.setPaginationReserved();
-        GetMediaTask mediaTask = new GetMediaTask (progressBar);
+        GetMediaTask mediaTask = new GetMediaTask (progressBar, cardStackView, adapter);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
         adapter.addAll(MainActivity.list);
         adapter.notifyDataSetChanged();
     }
 
-    private MediaCardAdapter createMediaCardAdapter ()
+    private void createMediaCardAdapter ()
     {
         final MediaCardAdapter adapter = new MediaCardAdapter(getApplicationContext());
-        GetMediaTask mediaTask =  new GetMediaTask(progressBar);
+        GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, adapter);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
-        adapter.addAll(MainActivity.list);
-        return adapter;
+        /*adapter.addAll(MainActivity.list);
+        return adapter;*/
     }
 
 }
@@ -132,11 +135,15 @@ public class MainActivity extends AppCompatActivity {
 class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
 {
     private ProgressBar progressBar;
+    private CardStackView cardStackView;
+    private MediaCardAdapter adapter;
 
-     GetMediaTask(ProgressBar pb)
+     GetMediaTask(ProgressBar pb, CardStackView csv, MediaCardAdapter ad)
      {
         super();
         this.progressBar = pb;
+        this.cardStackView = csv;
+        this.adapter = ad;
      }
 
     @Override
@@ -275,6 +282,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                     ret.add(temp);
                 }
                 Log.i("doInBackground in [GetMediaTask]", "Done");
+                Log.i("DoInBackground", ""+ret.size());
             }
         }
         catch (Exception e)
@@ -288,8 +296,10 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     protected void onPostExecute(ArrayList<Media> media)
     {
         super.onPostExecute(media);
-        Media temp = media.get(4);
-        MainActivity.updateList(media);
+        //MainActivity.updateList(media);
+        adapter.addAll(media);
+        cardStackView.setAdapter(adapter);
+        cardStackView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);
     }
 
