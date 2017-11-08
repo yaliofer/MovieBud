@@ -44,19 +44,16 @@ public class MainActivity extends AppCompatActivity {
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
     }
 
-
 }
 
 class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
 {
     private ProgressBar progressBar;
-    private ImageView imageView;
 
      GetMediaTask(ProgressBar pb, ImageView im)
      {
         super();
         this.progressBar = pb;
-        this.imageView = im;
      }
 
     @Override
@@ -64,7 +61,6 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     {
         super.onPreExecute();
         this.progressBar.setVisibility(View.VISIBLE);
-        //this.imageView.setVisibility(View.GONE);
     }
 
     @Override
@@ -76,37 +72,32 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         Bitmap bitmap;
         try
         {
+            Log.i("doInBackground in [GetMediaTask]", "Staring now");
             //Handle Configurations
-            Log.i("Downloading Poster Starting", "Now");
             String ans = GetMediaTask.readURL(params[2]);
             //GET URLs
-            Log.i("Success! ", "Data successfully recovered from TMDb");
-            Log.i("JSON:", ans);
+            Log.i("doInBackground in [GetMediaTask]", "Downloaded Configurations JSON");
             JSONObject object = new JSONObject(ans);
             JSONObject images;
             if (object.has("images"))
             {
                 images = object.getJSONObject("images");
-                Log.i("Retrieved", "JSON images file");
                 Log.i("JSON:", images.toString());
                 baseURL = images.getString("secure_base_url");
                 sizes = images.getJSONArray("poster_sizes");
                 posterSize = sizes.get(sizes.length()-2).toString();
-                Log.i("Base URL", baseURL);
-                Log.i("Size", posterSize);
+                Log.i("doInBackground in [GetMediaTask]", "Retrieved Configuration");
                 Media.setBaseURL(baseURL);
                 Media.setPosterSize(posterSize);
             }
             //Handle Media
-            Log.i("Starting task", "Now");
+            Log.i("doInBackground in [GetMediaTask]", "Starting Media Handling");
             int numMovies, numTV;
             numMovies = 15;
             numTV = 15;
             //Handle Movies
-            Log.i("Attempting to read URL", "Now");
             ans = readURL(params[0]);
-            Log.i("Success! ", "Data successfully recovered from TMDb");
-            Log.i("Answer: ", ans);
+            Log.i("doInBackground in [GetMediaTask]", "Downloaded Movies JSON");
             //Parse the JSON
             JSONObject parentObject = new JSONObject(ans);
             JSONArray results;
@@ -147,24 +138,20 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                     //Building Poster URL
                     String query;
                     query = Media.getBaseURL()+Media.getPosterSize()+temp.getPosterPath();
-                    Log.i("Poster URL", query);
                     //Downloading the Image
                     bitmap = downlaodBitmap(query);
                     //Adding image to object
                     temp.setPoster(bitmap);
-                    Log.i("Done", "Added Image Successfully to Media"+temp.getTitle());
+                    Log.i("doInBackground in [GetMediaTask]", "Downloaded Poster for "+temp.getTitle());
                     //Add To ArrayList
                     ret.add(temp);
                 }
-                Log.i("Success! ", "Successfully added all the movies");
+                Log.i("doInBackground in [GetMediaTask]", "Added all the Movies");
                 Media t = ret.get(7);
-                Log.i("Prove: ", t.toString());
-                Log.i("Number: ", ret.size()+"");
             }
             //Handle TV
             ans = readURL(params[1]);
-            Log.i("Success! ", "Data successfully recovered from TMDb");
-            Log.i("Answer: ", ans);
+            Log.i("doInBackground in [GetMediaTask]", "Downloaded TV JSON");
             //Parse the JSON
             parentObject = new JSONObject(ans);
             if (parentObject.has("results"))
@@ -196,21 +183,15 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                     //Building Poster URL
                     String query;
                     query = Media.getBaseURL()+Media.getPosterSize()+temp.getPosterPath();
-                    Log.i("Poster URL", query);
                     //Downloading the Image
                     bitmap = downlaodBitmap(query);
                     //Adding image to object
                     temp.setPoster(bitmap);
-                    Log.i("Done", "Added Image Successfully to Media"+temp.getTitle());
+                    Log.i("doInBackground in [GetMediaTask]", "Downloaded Poster for "+temp.getTitle());
                     //Add To ArrayList
                     ret.add(temp);
                 }
-                Log.i("Success!", "Added TV Shows");
-                Media t = ret.get(17);
-                Log.i("Prove:" , t.toString());
-                Log.i("Number: ", ret.size()+"");
-                t = ret.get(7);
-                Log.i("Prove:" , t.toString());
+                Log.i("doInBackground in [GetMediaTask]", "Done");
             }
         }
         catch (Exception e)
