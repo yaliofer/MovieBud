@@ -14,6 +14,7 @@ import com.yuyakaido.android.cardstackview.CardStackView;
 import com.yuyakaido.android.cardstackview.SwipeDirection;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -110,9 +111,9 @@ public class MainActivity extends AppCompatActivity {
     {
         cardStackView.setPaginationReserved();
         GetMediaTask mediaTask = new GetMediaTask (progressBar, cardStackView, adapter);
-        mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
-        adapter.addAll(MainActivity.list);
-        adapter.notifyDataSetChanged();
+        //mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
+        /*adapter.addAll(MainActivity.list);
+        adapter.notifyDataSetChanged();*/
     }
 
     private void createMediaCardAdapter ()
@@ -158,6 +159,8 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             Log.i("doInBackground in [GetMediaTask]", "Staring now");
             //Handle Configurations
             String ans = GetMediaTask.readURL(params[2]);
+            //Handle Genres
+            JSONArray genres = downloadGenreKeys();
             //GET URLs
             Log.i("doInBackground in [GetMediaTask]", "Downloaded Configurations JSON");
             JSONObject object = new JSONObject(ans);
@@ -189,7 +192,9 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             int i, idRaw, ratingRaw;
             String title, path;
             String language;
+            String genre;
             double rating;
+            JSONArray ids;
             Object oof;
             if (parentObject.has("results"))
             {
@@ -203,21 +208,23 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                         language = "English";
                     }
                     //Build Media
-                    Log.i("Obj:", obj.toString());
                     title = (String)obj.get("original_title");
                     idRaw = (int)obj.get("id");
                     path = (String)obj.get("poster_path");
                     oof = obj.get("vote_average");
+                    ids = (JSONArray) obj.get("genre_ids");
+                    genre = setGenre(ids, genres);
                     if (oof instanceof Integer)
                     {
                         ratingRaw = (int)obj.get("vote_average");
-                        temp = new Media ("movie", title, (long)idRaw, path, (double)ratingRaw, language);
+                        temp = new Media ("movie", title, (long)idRaw, path, (double)ratingRaw, genre,language);
                     }
                     else
                     {
                         rating = (double)obj.get("vote_average");
-                        temp = new Media ("movie", title, (long)idRaw, path, rating, language);
+                        temp = new Media ("movie", title, (long)idRaw, path, rating, genre, language);
                     }
+                    Log.i("doInBackground in [GetMediaTask]", "genre-"+genre);
                     //Building Poster URL
                     String query;
                     query = Media.getBaseURL()+Media.getPosterSize()+temp.getPosterPath();
@@ -225,7 +232,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                     bitmap = downlaodBitmap(query);
                     //Adding image to object
                     temp.setPoster(bitmap);
-                    Log.i("doInBackground in [GetMediaTask]", "Downloaded Poster for "+temp.getTitle());
+                    Log.i("doInBackground in [GetMediaTask]", "Downloaded Poster for "+temp.getTitle()+ " in place "+(ret.size()+1));
                     //Add To ArrayList
                     ret.add(temp);
                 }
@@ -253,15 +260,17 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                     idRaw = (int)obj.get("id");
                     path = (String)obj.get("poster_path");
                     oof = obj.get("vote_average");
+                    ids = (JSONArray) obj.get("genre_ids");
+                    genre = setGenre(ids, genres);
                     if (oof instanceof Integer)
                     {
                         ratingRaw = (int)obj.get("vote_average");
-                        temp = new Media ("tv", title, (long)idRaw, path, (double)ratingRaw, language);
+                        temp = new Media ("tv", title, (long)idRaw, path, (double)ratingRaw, genre, language);
                     }
                     else
                     {
                         rating = (double)obj.get("vote_average");
-                        temp = new Media ("tv", title, (long)idRaw, path, rating, language);
+                        temp = new Media ("tv", title, (long)idRaw, path, rating, genre,  language);
                     }
                     //Building Poster URL
                     String query;
@@ -270,7 +279,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                     bitmap = downlaodBitmap(query);
                     //Adding image to object
                     temp.setPoster(bitmap);
-                    Log.i("doInBackground in [GetMediaTask]", "Downloaded Poster for "+temp.getTitle());
+                    Log.i("doInBackground in [GetMediaTask]", "Downloaded Poster for "+temp.getTitle()+" in place "+(ret.size()+1));
                     //Add To ArrayList
                     ret.add(temp);
                 }
@@ -352,5 +361,68 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         }
         return "";
     }
+
+    private static JSONArray downloadGenreKeys ()
+    {
+        try
+        {
+            String ans = readURL(Media.genreKey);
+            JSONObject obj = new JSONObject(ans);
+            if (obj.has("genres"))
+            {
+                JSONObject object;
+                JSONArray array = (JSONArray) obj.get("genres");
+                return array;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static String convertGenre (JSONArray array, int id)
+    {
+        JSONObject object;
+        try
+        {
+            for (int i=0; i<array.length();i++)
+            {
+                object = (JSONObject) array.get(i);
+                if ((int)(object.get("id"))==id)
+                {
+                    return object.get("name").toString();
+                }
+            }
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return "None";
+    }
+
+    private static String setGenre (JSONArray ids, JSONArray genreKey)
+    {
+        String genre = "";
+        try
+        {
+            if (ids.length()==1)
+            {
+                return convertGenre(genreKey, ids.getInt(0));
+            }
+            if (ids.length()>1)
+            {
+                return convertGenre(genreKey, ids.getInt(0))+", "+convertGenre(genreKey, ids.getInt(1));
+            }
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        return genre;
+    }
+
 }
 

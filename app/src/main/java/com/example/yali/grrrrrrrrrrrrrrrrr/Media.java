@@ -14,7 +14,7 @@ public class Media {
     private long id;
     private String posterPath;
     private double rating;
-    //Add Genre
+    private String genre;
     private String language;
     private Bitmap poster;
     //Static Parameters
@@ -28,14 +28,17 @@ public class Media {
             "https://api.themoviedb.org/3/configuration?api_key=eac80b61f4b6d4103fab65bae01e44ac";
     private static String baseURL = "";
     private static String posterSize = "";
+    public static String genreKey =
+            "https://api.themoviedb.org/3/genre/movie/list?api_key=eac80b61f4b6d4103fab65bae01e44ac";
     //Constructors
 
-    public Media(String type, String title, long id, String posterPath, double rating, String language) {
+    public Media(String type, String title, long id, String posterPath, double rating, String genre,String language) {
         this.type = type;
         this.title = title;
         this.id = id;
         this.posterPath = posterPath;
         this.rating = rating;
+        this.genre = genre;
         this.language = language;
     }
 
@@ -147,6 +150,11 @@ public class Media {
 
     public void setPoster(Bitmap poster) {
         this.poster = poster;
+    }
+
+    public String getGenre()
+    {
+        return genre;
     }
 
     //Other Methods

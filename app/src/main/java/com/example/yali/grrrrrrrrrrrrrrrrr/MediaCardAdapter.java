@@ -37,7 +37,7 @@ public class MediaCardAdapter extends ArrayAdapter <Media>
 
         holder.title.setText(media.getTitle());
         holder.rating.setText(""+media.getRating());
-        holder.language.setText(media.getLanguage());
+        holder.genre.setText(media.getGenre());
         holder.poster.setImageBitmap(media.getPoster());
 
         return convertView;
@@ -48,14 +48,14 @@ public class MediaCardAdapter extends ArrayAdapter <Media>
     {
         public TextView title;
         public TextView rating;
-        public TextView language;
+        public TextView genre;
         public ImageView poster;
 
         public ViewHolder (View view)
         {
             this.title = (TextView)view.findViewById(R.id.item_media_title);
             this.rating = (TextView)view.findViewById(R.id.item_media_rating);
-            this.language = (TextView)view.findViewById(R.id.item_media_language);
+            this.genre = (TextView)view.findViewById(R.id.item_media_genre);
             this.poster = (ImageView)view.findViewById(R.id.item_media_poster);
         }
     }
