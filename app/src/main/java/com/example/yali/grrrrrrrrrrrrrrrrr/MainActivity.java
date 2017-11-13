@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.yuyakaido.android.cardstackview.CardStackView;
 import com.yuyakaido.android.cardstackview.SwipeDirection;
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     CardStackView cardStackView;
     MediaCardAdapter adapter;
-    //Add Genres
+    //Color Palette and stuff
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -48,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
         MainActivity.list = new ArrayList<>(30);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         cardStackView = (CardStackView)findViewById(R.id.cardStackView);
-
         cardStackView.setCardEventListener(new CardStackView.CardEventListener()
         {
             @Override
@@ -62,7 +62,16 @@ public class MainActivity extends AppCompatActivity {
             {
                 Log.d("CardStackView", "onCardSwiped: " + direction.toString());
                 Log.d("CardStackView", "topIndex: " + cardStackView.getTopIndex());
-                if (cardStackView.getTopIndex() == adapter.getCount() - 5) {
+                if (direction.equals(SwipeDirection.Right))
+                {
+                    Toast.makeText(getApplicationContext(), "You Like This Movie", Toast.LENGTH_SHORT).show();
+                }
+                if (direction.equals(SwipeDirection.Left))
+                {
+                    Toast.makeText(getApplicationContext(), "You Dislike This Movie", Toast.LENGTH_SHORT).show();
+                }
+                if (cardStackView.getTopIndex() == adapter.getCount() - 5)
+                {//If Paginate needs to work, change the cardStackView adapter to the main in the MainActivity
                     Log.d("CardStackView", "Paginate: " + cardStackView.getTopIndex());
                     paginate();
                 }
