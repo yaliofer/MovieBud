@@ -26,7 +26,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:layout_alignParentBottom="true">
+            android:layout_alignParentBottom="true"
+            >
 
             <TextView
                 android:id="@+id/item_media_title"
@@ -42,7 +43,8 @@
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
-                android:textSize="20sp"/>
+                android:textSize="20sp"
+                />
 
             <TextView
                 android:id="@+id/item_media_genre"

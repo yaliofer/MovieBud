@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
     private void paginate ()
     {
         cardStackView.setPaginationReserved();
-        GetMediaTask mediaTask = new GetMediaTask (progressBar, cardStackView, adapter);
+        GetMediaTask mediaTask = new GetMediaTask (progressBar, cardStackView, adapter, this);
         //mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
         /*adapter.addAll(MainActivity.list);
         adapter.notifyDataSetChanged();*/
@@ -119,10 +119,14 @@ public class MainActivity extends AppCompatActivity {
     private void createMediaCardAdapter ()
     {
         final MediaCardAdapter adapter = new MediaCardAdapter(getApplicationContext());
-        GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, adapter);
+        GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, adapter, this);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
     }
 
+    public void setAdapter (MediaCardAdapter a)
+    {
+        this.adapter = a;
+    }
 
 }
 
@@ -131,13 +135,15 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     private ProgressBar progressBar;
     private CardStackView cardStackView;
     private MediaCardAdapter adapter;
+    private MainActivity mainActivity;
 
-     GetMediaTask(ProgressBar pb, CardStackView csv, MediaCardAdapter ad)
+     GetMediaTask(ProgressBar pb, CardStackView csv, MediaCardAdapter ad, MainActivity ma)
      {
         super();
         this.progressBar = pb;
         this.cardStackView = csv;
         this.adapter = ad;
+        this.mainActivity = ma;
      }
 
     @Override
@@ -208,7 +214,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                         language = "English";
                     }
                     //Build Media
-                    title = (String)obj.get("original_title");
+                    title = (String)obj.get("title");
                     idRaw = (int)obj.get("id");
                     path = (String)obj.get("poster_path");
                     oof = obj.get("vote_average");
@@ -256,7 +262,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                         language = "English";
                     }
                     //Build Media
-                    title = (String)obj.get("original_name");
+                    title = (String)obj.get("name");
                     idRaw = (int)obj.get("id");
                     path = (String)obj.get("poster_path");
                     oof = obj.get("vote_average");
@@ -301,6 +307,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         //MainActivity.updateList(media);
         adapter.addAll(media);
         cardStackView.setAdapter(adapter);
+        mainActivity.setAdapter(adapter);
         cardStackView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);
     }
