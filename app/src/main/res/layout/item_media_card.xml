@@ -35,7 +35,12 @@
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
-                android:textSize="26sp"/>
+                android:textSize="26sp"
+                android:shadowColor="#000000"
+                android:shadowDx="0.1"
+                android:shadowDy="0.1"
+                android:shadowRadius="30"
+                />
 
             <TextView
                 android:id="@+id/item_media_rating"
@@ -44,6 +49,10 @@
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
                 android:textSize="20sp"
+                android:shadowDx="0.1"
+                android:shadowDy="0.1"
+                android:shadowRadius="25"
+                android:shadowColor="#000000"
                 />
 
             <TextView
@@ -52,7 +61,12 @@
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
-                android:textSize="20sp"/>
+                android:textSize="20sp"
+                android:shadowDx="0.1"
+                android:shadowDy="0.1"
+                android:shadowRadius="25"
+                android:shadowColor="#000000"
+                />
 
         </LinearLayout>
 

@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "848663598707",
+    "firebase_url": "https://movinder-yo.firebaseio.com",
+    "project_id": "movinder-yo",
+    "storage_bucket": "movinder-yo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:848663598707:android:9bd98685168cd70e",
+        "android_client_info": {
+          "package_name": "com.example.yali.grrrrrrrrrrrrrrrrr"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "848663598707-9t9afr5jai2t7ovdd992jgqeipfkt7if.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCccJwuZv0LKcZJCJlGHTqYUuSzC4jjFfA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
