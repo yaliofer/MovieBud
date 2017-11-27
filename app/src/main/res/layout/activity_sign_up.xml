@@ -6,4 +6,44 @@
     android:layout_height="match_parent"
     tools:context="com.example.yali.grrrrrrrrrrrrrrrrr.SignUpActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/nameBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:hint = "Enter your name here"
+            />
+
+        <EditText
+            android:id="@+id/mailBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textEmailAddress"
+            android:hint="Enter your e-mail here"
+            />
+
+        <EditText
+            android:id="@+id/passBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPassword"
+            android:hint="Enter your password here"
+            />
+
+        <Button
+            android:id="@+id/registerButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sign Up" />
+
+
+    </LinearLayout>
 </android.support.constraint.ConstraintLayout>

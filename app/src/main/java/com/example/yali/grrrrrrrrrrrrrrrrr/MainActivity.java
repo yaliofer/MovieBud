@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.yuyakaido.android.cardstackview.CardStackView;
 import com.yuyakaido.android.cardstackview.SwipeDirection;
 
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     CardStackView cardStackView;
     MediaCardAdapter adapter;
+    private FirebaseAuth mAuth;
     //Color Palette and stuff
 
     @Override
@@ -41,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setup();
         reload();
+        FirebaseUser user = mAuth.getCurrentUser();
+        Toast.makeText(getApplicationContext(), user.getEmail(), Toast.LENGTH_LONG).show();
     }
 
     public void setup ()
