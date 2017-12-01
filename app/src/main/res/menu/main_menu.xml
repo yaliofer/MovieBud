@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:support="http://schemas.android.com/apk/res-auto">
+
+    <group >
+        <item
+            android:id="@+id/mainMenuReccomendations"
+            android:title="Get Reccomendations" />
+        <item
+            android:id="@+id/mainMenuFilter"
+            android:icon="@drawable/overlay_left_image"
+            android:title="Filter"
+            support:showAsAction="never"
+            />
+        <item
+            android:id="@+id/mainMenuAccount"
+            android:icon="@drawable/ic_account_circle_black_24dp"
+            android:title="Account"
+            support:showAsAction="always" />
+        <item
+            android:id="@+id/mainMenuReverse"
+            android:icon="@drawable/ic_restore_black_24dp"
+            android:title="Reverse"
+            android:enabled="true"
+            support:showAsAction="always"
+            />
+    </group>
+</menu>

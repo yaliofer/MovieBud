@@ -6,6 +6,9 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -46,7 +49,29 @@ public class MainActivity extends AppCompatActivity {
         reload();
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
-        Toast.makeText(getApplicationContext(), user.getEmail(), Toast.LENGTH_LONG).show();
+        if (user!=null)
+        {
+            Toast.makeText(getApplicationContext(), user.getEmail(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId())
+        {
+            case R.id.mainMenuReverse:
+                cardStackView.reverse();
+                break;
+        }
+        return true;
     }
 
     public void setup ()
