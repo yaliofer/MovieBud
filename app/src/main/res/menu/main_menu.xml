@@ -24,5 +24,8 @@
             android:enabled="true"
             support:showAsAction="always"
             />
+        <item
+            android:title="Refresh"
+            android:id="@+id/mainMenuRefresh"/>
     </group>
 </menu>

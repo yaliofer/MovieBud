@@ -1,8 +1,10 @@
 package com.example.yali.grrrrrrrrrrrrrrrrr;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -70,8 +72,34 @@ public class MainActivity extends AppCompatActivity {
             case R.id.mainMenuReverse:
                 cardStackView.reverse();
                 break;
+            case R.id.mainMenuAccount:
+                askToLogOut();
+                break;
         }
         return true;
+    }
+
+    public void askToLogOut ()
+    {
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(this);
+        builder.setTitle("Log Out");
+        builder.setCancelable(false);
+        builder.setMessage("Are you sure you want to log out?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mAuth.signOut();
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     public void setup ()
@@ -341,7 +369,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
 
     @Override
     protected void onPostExecute(ArrayList<Media> media)
-    {
+    {//Change so it wont replace the adapter but update it
         super.onPostExecute(media);
         //MainActivity.updateList(media);
         adapter.addAll(media);
