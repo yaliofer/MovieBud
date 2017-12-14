@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.yuyakaido.android.cardstackview.CardStackView;
 import com.yuyakaido.android.cardstackview.SwipeDirection;
 
@@ -130,17 +132,29 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCardSwiped(SwipeDirection direction)
             {
+                FirebaseUser user = mAuth.getCurrentUser();
+                String userID = user.getUid();
+                DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+                DatabaseReference userRef = rootRef.child("users").child(userID);
+                DatabaseReference likedMedia = userRef.child("Liked Media");
+                DatabaseReference dislikedMedia = userRef.child("Disliked Media");
+                DatabaseReference unseenMedia = userRef.child("Unseen Media");
                 Log.d("CardStackView", "onCardSwiped: " + direction.toString());
                 Log.d("CardStackView", "topIndex: " + cardStackView.getTopIndex());
-                adapter.remove(adapter.getItem(0));
+                Media swiped = adapter.getItem(0);
+                adapter.remove(swiped);
                 cardStackView.setAdapter(adapter);
                 if (direction.equals(SwipeDirection.Right))
                 {
-                    Toast.makeText(getApplicationContext(), "You Like This Movie", Toast.LENGTH_SHORT).show();
+                    likedMedia.child(swiped.getId()+"").setValue(swiped.getTitle()+"");
                 }
                 if (direction.equals(SwipeDirection.Left))
                 {
-                    Toast.makeText(getApplicationContext(), "You Dislike This Movie", Toast.LENGTH_SHORT).show();
+                    dislikedMedia.child(swiped.getId()+"").setValue(swiped.getTitle()+"");
+                }
+                if (direction.equals(SwipeDirection.Top))
+                {
+                    unseenMedia.child(swiped.getId()+"").setValue(swiped.getTitle()+"");
                 }
                 if (adapter.getCount()<5)
                 {//If Paginate needs to work, change the cardStackView adapter to the main in the MainActivity
@@ -383,10 +397,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     {//Change so it wont replace the adapter but update it
         super.onPostExecute(media);
         //MainActivity.updateList(media);
-        /*adapter.addAll(media);
-        cardStackView.setAdapter(adapter);
-        mainActivity.setAdapter(adapter);
-        mainActivity.setAdapter(adapter);*/
+        //Add Methods to Filter Already Seen Movies
         mainActivity.finalize(media);
         cardStackView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);

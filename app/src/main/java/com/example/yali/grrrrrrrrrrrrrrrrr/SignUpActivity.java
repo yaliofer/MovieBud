@@ -79,13 +79,7 @@ public class SignUpActivity extends AppCompatActivity {
                     {
                         String userID = mAuth.getCurrentUser().getUid();
                         DatabaseReference currentUserReference = usersReference.child(userID);
-                        currentUserReference.child("name").setValue(name);
-                        //Media Represented By ID's
-                        //Doesn't add, for some reason
-                        currentUserReference.child("likedMedia");
-                        currentUserReference.child("unlikedMedia").setValue(new ArrayList<String>());
-                        currentUserReference.child("unseen media").setValue(new ArrayList<String>());
-
+                        currentUserReference.child("Name").setValue(name);
 
                         progressDialog.dismiss();
 
@@ -96,6 +90,7 @@ public class SignUpActivity extends AppCompatActivity {
                     {
                         if (task.getException() instanceof FirebaseAuthUserCollisionException)
                         {
+                            progressDialog.dismiss();
                             Toast.makeText(getApplicationContext(), "User already exists for this email address", Toast.LENGTH_SHORT).show();
                         }
                     }
