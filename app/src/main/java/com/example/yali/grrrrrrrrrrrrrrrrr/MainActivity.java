@@ -79,6 +79,17 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public void finalize (ArrayList <Media> media)
+    {
+        if (this.adapter==null)
+        {
+            this.adapter = new MediaCardAdapter(getApplicationContext());
+        }
+        this.adapter.addAll(media);
+        this.adapter.notifyDataSetChanged();
+        cardStackView.setAdapter(this.adapter);
+    }
+
     public void askToLogOut ()
     {
         AlertDialog.Builder builder;
@@ -90,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 mAuth.signOut();
+                cardStackView.setEnabled(false);
             }
         });
         builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -120,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
             {
                 Log.d("CardStackView", "onCardSwiped: " + direction.toString());
                 Log.d("CardStackView", "topIndex: " + cardStackView.getTopIndex());
+                adapter.remove(adapter.getItem(0));
+                cardStackView.setAdapter(adapter);
                 if (direction.equals(SwipeDirection.Right))
                 {
                     Toast.makeText(getApplicationContext(), "You Like This Movie", Toast.LENGTH_SHORT).show();
@@ -128,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     Toast.makeText(getApplicationContext(), "You Dislike This Movie", Toast.LENGTH_SHORT).show();
                 }
-                if (cardStackView.getTopIndex() == adapter.getCount() - 5)
+                if (adapter.getCount()<5)
                 {//If Paginate needs to work, change the cardStackView adapter to the main in the MainActivity
                     Log.d("CardStackView", "Paginate: " + cardStackView.getTopIndex());
                     paginate();
@@ -167,9 +181,6 @@ public class MainActivity extends AppCompatActivity {
             {
                 adapter = null;
                 createMediaCardAdapter();
-                /*cardStackView.setAdapter(adapter);
-                cardStackView.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);*/
             }
         }, 1000);
     }
@@ -178,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
     {
         cardStackView.setPaginationReserved();
         GetMediaTask mediaTask = new GetMediaTask (progressBar, cardStackView, adapter, this);
-        //mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
+        mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
         /*adapter.addAll(MainActivity.list);
         adapter.notifyDataSetChanged();*/
     }
@@ -372,9 +383,11 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     {//Change so it wont replace the adapter but update it
         super.onPostExecute(media);
         //MainActivity.updateList(media);
-        adapter.addAll(media);
+        /*adapter.addAll(media);
         cardStackView.setAdapter(adapter);
         mainActivity.setAdapter(adapter);
+        mainActivity.setAdapter(adapter);*/
+        mainActivity.finalize(media);
         cardStackView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);
     }

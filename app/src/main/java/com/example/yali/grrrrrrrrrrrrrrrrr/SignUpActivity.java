@@ -21,6 +21,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
+
 public class SignUpActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
@@ -78,6 +80,12 @@ public class SignUpActivity extends AppCompatActivity {
                         String userID = mAuth.getCurrentUser().getUid();
                         DatabaseReference currentUserReference = usersReference.child(userID);
                         currentUserReference.child("name").setValue(name);
+                        //Media Represented By ID's
+                        //Doesn't add, for some reason
+                        currentUserReference.child("likedMedia");
+                        currentUserReference.child("unlikedMedia").setValue(new ArrayList<String>());
+                        currentUserReference.child("unseen media").setValue(new ArrayList<String>());
+
 
                         progressDialog.dismiss();
 
