@@ -80,6 +80,7 @@ public class SignUpActivity extends AppCompatActivity {
                         String userID = mAuth.getCurrentUser().getUid();
                         DatabaseReference currentUserReference = usersReference.child(userID);
                         currentUserReference.child("Name").setValue(name);
+                        currentUserReference.child("Page Number").setValue(1);
 
                         progressDialog.dismiss();
 

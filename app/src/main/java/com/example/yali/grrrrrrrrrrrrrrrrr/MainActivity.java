@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,8 +18,11 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.yuyakaido.android.cardstackview.CardStackView;
 import com.yuyakaido.android.cardstackview.SwipeDirection;
 
@@ -42,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
     CardStackView cardStackView;
     MediaCardAdapter adapter;
     private FirebaseAuth mAuth;
+    private FirebaseDatabase mDatabase;
+    long currentPage = 1;
+    boolean inPagination = false;
     //Color Palette and stuff
 
     @Override
@@ -49,15 +56,44 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setup();
-        reload();
+
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
-        if (user!=null)
-        {
-            Toast.makeText(getApplicationContext(), user.getEmail(), Toast.LENGTH_LONG).show();
-        }
+        mAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser cUser = firebaseAuth.getCurrentUser();
+                if (cUser==null)
+                {
+                    currentPage = 1;
+                }
+                if (cUser.isAnonymous())
+                {
+                    currentPage = 7;
+                }
+            }
+        });
+
+        this.mDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference databaseReference = this.mDatabase.getReference();
+        DatabaseReference userIntRef = databaseReference.child("users").child(user.getUid()).child("Page Number");
+        userIntRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                currentPage = dataSnapshot.getValue(long.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.i("Database Error", databaseError.toException().toString());
+            }
+        });
+
+
+        setup();
+        reload();
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -79,6 +115,15 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         return true;
+    }
+
+    public void updatePageNumber (long num)
+    {
+        long toSet = num+1;
+        FirebaseUser user = mAuth.getCurrentUser();
+        DatabaseReference userRef = mDatabase.getReference().child("users").child(user.getUid());
+        DatabaseReference pageRef = userRef.child("Page Number");
+        pageRef.setValue(toSet);
     }
 
     public void finalize (ArrayList <Media> media)
@@ -156,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     unseenMedia.child(swiped.getId()+"").setValue(swiped.getTitle()+"");
                 }
-                if (adapter.getCount()<5)
+                if (adapter.getCount()<10&&inPagination==false)
                 {//If Paginate needs to work, change the cardStackView adapter to the main in the MainActivity
                     Log.d("CardStackView", "Paginate: " + cardStackView.getTopIndex());
                     paginate();
@@ -202,16 +247,16 @@ public class MainActivity extends AppCompatActivity {
     private void paginate ()
     {
         cardStackView.setPaginationReserved();
-        GetMediaTask mediaTask = new GetMediaTask (progressBar, cardStackView, adapter, this);
+        this.inPagination = true;
+        GetMediaTask mediaTask = new GetMediaTask (progressBar, cardStackView, adapter, this, currentPage);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
-        /*adapter.addAll(MainActivity.list);
-        adapter.notifyDataSetChanged();*/
+        Log.i("Media starting", "Paginate");
     }
 
     private void createMediaCardAdapter ()
     {
         final MediaCardAdapter adapter = new MediaCardAdapter(getApplicationContext());
-        GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, adapter, this);
+        GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, adapter, this, currentPage);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
     }
 
@@ -228,14 +273,16 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     private CardStackView cardStackView;
     private MediaCardAdapter adapter;
     private MainActivity mainActivity;
+    private long currentPage;
 
-     GetMediaTask(ProgressBar pb, CardStackView csv, MediaCardAdapter ad, MainActivity ma)
+     GetMediaTask(ProgressBar pb, CardStackView csv, MediaCardAdapter ad, MainActivity ma, long page)
      {
         super();
         this.progressBar = pb;
         this.cardStackView = csv;
         this.adapter = ad;
         this.mainActivity = ma;
+        this.currentPage = page;
      }
 
     @Override
@@ -256,7 +303,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         {
             Log.i("doInBackground in [GetMediaTask]", "Staring now");
             //Handle Configurations
-            String ans = GetMediaTask.readURL(params[2]);
+            String ans = GetMediaTask.readURL(params[2]);//Params[2] is Configurations Query
             //Handle Genres
             JSONArray genres = downloadGenreKeys();
             //GET URLs
@@ -280,7 +327,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             numMovies = 15;
             numTV = 15;
             //Handle Movies
-            ans = readURL(params[0]);
+            ans = readURL(prepLink(params[0], this.currentPage));//params[0]
             Log.i("doInBackground in [GetMediaTask]", "Downloaded Movies JSON");
             //Parse the JSON
             JSONObject parentObject = new JSONObject(ans);
@@ -338,7 +385,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                 Media t = ret.get(7);
             }
             //Handle TV
-            ans = readURL(params[1]);
+            ans = readURL(prepLink(params[1], this.currentPage));//params[1]
             Log.i("doInBackground in [GetMediaTask]", "Downloaded TV JSON");
             //Parse the JSON
             parentObject = new JSONObject(ans);
@@ -399,6 +446,8 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         //MainActivity.updateList(media);
         //Add Methods to Filter Already Seen Movies
         mainActivity.finalize(media);
+        mainActivity.updatePageNumber(this.currentPage);
+        mainActivity.inPagination = false;
         cardStackView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);
     }
@@ -499,6 +548,14 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             e.printStackTrace();
         }
         return "None";
+    }
+
+    private static String prepLink (String baseLink, long pageNumber)
+    {
+        String link;
+        link = baseLink;
+        link = link+"&page="+pageNumber;
+        return link;
     }
 
     private static String setGenre (JSONArray ids, JSONArray genreKey)
