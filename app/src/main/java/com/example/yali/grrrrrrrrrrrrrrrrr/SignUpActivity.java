@@ -77,10 +77,11 @@ public class SignUpActivity extends AppCompatActivity {
                 {
                     if (task.isSuccessful())
                     {
+                        String s = getString(R.string.firebasePageNumber);
                         String userID = mAuth.getCurrentUser().getUid();
                         DatabaseReference currentUserReference = usersReference.child(userID);
                         currentUserReference.child("Name").setValue(name);
-                        currentUserReference.child("Page Number").setValue(1);
+                        currentUserReference.child(s).setValue(1);
 
                         progressDialog.dismiss();
 

@@ -38,6 +38,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     MediaCardAdapter adapter;
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
-    long currentPage = 1;
+    long currentPage;
     boolean inPagination = false;
     //Color Palette and stuff
 
@@ -74,21 +75,30 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        final String s = getString(R.string.firebasePageNumber);
         this.mDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = this.mDatabase.getReference();
-        DatabaseReference userIntRef = databaseReference.child("users").child(user.getUid()).child("Page Number");
-        userIntRef.addValueEventListener(new ValueEventListener() {
+        DatabaseReference userRef = databaseReference.child("users").child(user.getUid());
+        userRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                currentPage = dataSnapshot.getValue(long.class);
+                DataSnapshot snap =  dataSnapshot.child(s);
+                currentPage = snap.getValue(long.class);
+                Log.i("onDataChange", "Changed Data");
+                //Listener starts only AFTER the mediatask already started
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.i("Database Error", databaseError.toException().toString());
+                //Null
             }
         });
 
+        /*try {
+            TimeUnit.SECONDS.sleep(2);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
 
         setup();
         reload();
@@ -241,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
                 adapter = null;
                 createMediaCardAdapter();
             }
-        }, 1000);
+        }, 2000);
     }
 
     private void paginate ()

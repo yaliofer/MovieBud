@@ -38,6 +38,7 @@ public class LogInActivity extends AppCompatActivity {
         anonNames.add("ELIAD MALKI");
         anonNames.add("MASHIHAH");
         anonNames.add("YOTAM HARRARI");
+        anonNames.add("ZALMAN?");
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
