@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseDatabase mDatabase;
     long currentPage;
     boolean inPagination = false;
+    boolean downloadMore = true;
     //Color Palette and stuff
 
     @Override
@@ -98,6 +99,12 @@ public class MainActivity extends AppCompatActivity {
         reload();
     }
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem checkable = menu.findItem(R.id.mainMenuDownload);
+        checkable.setChecked(downloadMore);
+        return true;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -116,6 +123,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.mainMenuAccount:
                 askToLogOut();
+                break;
+            case R.id.mainMenuDownload:
+                downloadMore = !downloadMore;
                 break;
         }
         return true;
@@ -205,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     unseenMedia.child(swiped.getId()+"").setValue(swiped.getTitle()+"");
                 }
-                if (adapter.getCount()<10&&inPagination==false)
+                if (adapter.getCount()<10&&!inPagination&&downloadMore)
                 {//If Paginate needs to work, change the cardStackView adapter to the main in the MainActivity
                     Log.d("CardStackView", "Paginate: " + cardStackView.getTopIndex());
                     paginate();
@@ -287,6 +297,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     protected void onPreExecute()
     {
         super.onPreExecute();
+        mainActivity.updatePageNumber(this.currentPage);
         this.progressBar.setVisibility(View.VISIBLE);
     }
 
@@ -443,7 +454,6 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         //MainActivity.updateList(media);
         //Add Methods to Filter Already Seen Movies
         mainActivity.finalize(media);
-        mainActivity.updatePageNumber(this.currentPage);
         mainActivity.inPagination = false;
         cardStackView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);

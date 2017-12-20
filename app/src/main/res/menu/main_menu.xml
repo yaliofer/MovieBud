@@ -27,5 +27,11 @@
         <item
             android:title="Refresh"
             android:id="@+id/mainMenuRefresh"/>
+
+        <item
+            android:title="Keep Downloading"
+            android:id="@+id/mainMenuDownload"
+            android:checkable="true"
+            />
     </group>
 </menu>

@@ -17,6 +17,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -81,7 +82,7 @@ public class SignUpActivity extends AppCompatActivity {
                         String userID = mAuth.getCurrentUser().getUid();
                         DatabaseReference currentUserReference = usersReference.child(userID);
                         currentUserReference.child("Name").setValue(name);
-                        currentUserReference.child(s).setValue(1);
+                        currentUserReference.child(s).setValue(0);
 
                         progressDialog.dismiss();
 
@@ -94,6 +95,11 @@ public class SignUpActivity extends AppCompatActivity {
                         {
                             progressDialog.dismiss();
                             Toast.makeText(getApplicationContext(), "User already exists for this email address", Toast.LENGTH_SHORT).show();
+                        }
+                        if (task.getException() instanceof FirebaseAuthWeakPasswordException)
+                        {
+                            progressDialog.dismiss();
+                            Toast.makeText(getApplicationContext(), "Weak Password:"+((FirebaseAuthWeakPasswordException) task.getException()).getReason(), Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
