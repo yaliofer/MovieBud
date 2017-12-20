@@ -1,4 +1,5 @@
 package com.example.yali.grrrrrrrrrrrrrrrrr;
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,7 +15,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -38,7 +38,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -84,21 +83,16 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 DataSnapshot snap =  dataSnapshot.child(s);
                 currentPage = snap.getValue(long.class);
-                Log.i("onDataChange", "Changed Data");
+                Log.i("Value Event Listener at [userRef]", "Changed Data");
                 //Listener starts only AFTER the mediatask already started
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                //Null
+                Log.i("Value Event Listener at [userRef]", "Error");
+                Log.i("Value Event Listener at [userRef] Error", databaseError.toException().toString());
             }
         });
-
-        /*try {
-            TimeUnit.SECONDS.sleep(2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
 
         setup();
         reload();
@@ -258,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
     {
         cardStackView.setPaginationReserved();
         this.inPagination = true;
-        GetMediaTask mediaTask = new GetMediaTask (progressBar, cardStackView, adapter, this, currentPage);
+        GetMediaTask mediaTask = new GetMediaTask (progressBar, cardStackView, this, currentPage);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
         Log.i("Media starting", "Paginate");
     }
@@ -266,14 +260,10 @@ public class MainActivity extends AppCompatActivity {
     private void createMediaCardAdapter ()
     {
         final MediaCardAdapter adapter = new MediaCardAdapter(getApplicationContext());
-        GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, adapter, this, currentPage);
+        GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, this, currentPage);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
     }
 
-    public void setAdapter (MediaCardAdapter a)
-    {
-        this.adapter = a;
-    }
 
 }
 
@@ -281,16 +271,14 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
 {
     private ProgressBar progressBar;
     private CardStackView cardStackView;
-    private MediaCardAdapter adapter;
     private MainActivity mainActivity;
     private long currentPage;
 
-     GetMediaTask(ProgressBar pb, CardStackView csv, MediaCardAdapter ad, MainActivity ma, long page)
+     GetMediaTask(ProgressBar pb, CardStackView csv, MainActivity ma, long page)
      {
         super();
         this.progressBar = pb;
         this.cardStackView = csv;
-        this.adapter = ad;
         this.mainActivity = ma;
         this.currentPage = page;
      }
@@ -392,7 +380,6 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                     ret.add(temp);
                 }
                 Log.i("doInBackground in [GetMediaTask]", "Added all the Movies");
-                Media t = ret.get(7);
             }
             //Handle TV
             ans = readURL(prepLink(params[1], this.currentPage));//params[1]
@@ -527,9 +514,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             JSONObject obj = new JSONObject(ans);
             if (obj.has("genres"))
             {
-                JSONObject object;
-                JSONArray array = (JSONArray) obj.get("genres");
-                return array;
+                return (JSONArray) obj.get("genres");
             }
         }
         catch (Exception e)
