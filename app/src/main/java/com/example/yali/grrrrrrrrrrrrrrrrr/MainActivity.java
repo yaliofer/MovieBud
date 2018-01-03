@@ -297,7 +297,6 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     protected void onPreExecute()
     {
         super.onPreExecute();
-        mainActivity.updatePageNumber(this.currentPage);
         this.progressBar.setVisibility(View.VISIBLE);
     }
 
@@ -454,6 +453,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         //MainActivity.updateList(media);
         //Add Methods to Filter Already Seen Movies
         mainActivity.finalize(media);
+        mainActivity.updatePageNumber(this.currentPage);
         mainActivity.inPagination = false;
         cardStackView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);
