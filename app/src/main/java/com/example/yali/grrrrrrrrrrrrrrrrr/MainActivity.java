@@ -1,5 +1,4 @@
 package com.example.yali.grrrrrrrrrrrrrrrrr;
-import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     long currentPage;
     boolean inPagination = false;
     boolean downloadMore = true;
+    MatchMaker matcher;
     //Color Palette and stuff
 
     @Override
@@ -94,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("Value Event Listener at [userRef] Error", databaseError.toException().toString());
             }
         });
+        matcher = new MatchMaker(user);
 
         setup();
         reload();
@@ -127,6 +129,8 @@ public class MainActivity extends AppCompatActivity {
             case R.id.mainMenuDownload:
                 downloadMore = !downloadMore;
                 break;
+            case R.id.mainMenuReccomendations:
+                Toast.makeText(getApplicationContext(), matcher.check(), Toast.LENGTH_LONG).show();
         }
         return true;
     }
@@ -253,9 +257,9 @@ public class MainActivity extends AppCompatActivity {
             public void run()
             {
                 adapter = null;
-                createMediaCardAdapter();
+                downloadForFirstUse();
             }
-        }, 2000);
+        }, 3000);
     }
 
     private void paginate ()
@@ -267,9 +271,8 @@ public class MainActivity extends AppCompatActivity {
         Log.i("Media starting", "Paginate");
     }
 
-    private void createMediaCardAdapter ()
+    private void downloadForFirstUse()
     {
-        final MediaCardAdapter adapter = new MediaCardAdapter(getApplicationContext());
         GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, this, currentPage);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
     }
