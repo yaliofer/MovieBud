@@ -2,6 +2,7 @@ package com.example.yali.grrrrrrrrrrrrrrrrr;
 
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -23,12 +24,14 @@ public class MatchMaker
     private DatabaseReference userLikedRef;
     private DatabaseReference userDislikedRef;
     private DatabaseReference userUnseenRef;
+    private DataSnapshot userDataSnapshot;
     private ArrayList <Long> userLikedMedia;
     private ArrayList <Long> userDislikedMedia;
     private ArrayList <Long> userUnseenMedia;
+    private ArrayList <String> potentialUsers;
 
     //Constructors
-    public MatchMaker (FirebaseUser user)
+    public MatchMaker (final FirebaseUser user)
     {
         this.user = user;
         FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
@@ -40,9 +43,43 @@ public class MatchMaker
         this.userLikedMedia = new ArrayList<>();
         this.userDislikedMedia = new ArrayList<>();
         this.userUnseenMedia = new ArrayList<>();
+        this.potentialUsers = new ArrayList<>();
+
+        /*dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                MatchMaker.this.userDataSnapshot = dataSnapshot;
+                DataSnapshot userLikedSnapshot = dataSnapshot.child(user.getUid()).child("Liked Media");
+                DataSnapshot userDisikedSnapshot = dataSnapshot.child(user.getUid()).child("Disliked Media");
+                DataSnapshot userUnseenSnapshot = dataSnapshot.child(user.getUid()).child("Unseen Media");
+
+                for (DataSnapshot snap: userLikedSnapshot.getChildren())
+                {
+                    Long id = Long.parseLong(snap.getKey());
+                    MatchMaker.this.userLikedMedia.add(id);
+                }
+
+                for (DataSnapshot snap: userDisikedSnapshot.getChildren())
+                {
+                    Long id = Long.parseLong(snap.getKey());
+                    MatchMaker.this.userDislikedMedia.add(id);
+                }
+
+                for (DataSnapshot snap: userUnseenSnapshot.getChildren())
+                {
+                    Long id = Long.parseLong(snap.getKey());
+                    MatchMaker.this.userUnseenMedia.add(id);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });*/
 
         //Single Value Listener - to fill the arraylist with pre-inserted values
-        this.userLikedRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        /*this.userLikedRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snap : dataSnapshot.getChildren())
@@ -169,11 +206,133 @@ public class MatchMaker
             public void onCancelled(DatabaseError databaseError) {
 
             }
+        });*/
+    }
+
+    public void makeMatch ()
+    {
+        //Make Getting the value in here and triggering at the end the potential matches and then the full matching
+        //getPotentialMatches(this.userLikedMedia);
+        updateInfo();
+    }
+
+    private void updateInfo ()
+    {
+        FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference dbRef = mDatabase.getReference();
+        dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                MatchMaker.this.userDataSnapshot = dataSnapshot;
+                dataSnapshot = dataSnapshot.child("users");
+                DataSnapshot userLikedSnapshot = dataSnapshot.child(user.getUid()).child("Liked Media");
+                DataSnapshot userDisikedSnapshot = dataSnapshot.child(user.getUid()).child("Disliked Media");
+                DataSnapshot userUnseenSnapshot = dataSnapshot.child(user.getUid()).child("Unseen Media");
+
+                for (DataSnapshot snap: userLikedSnapshot.getChildren())
+                {
+                    Long id = Long.parseLong(snap.getKey());
+                    MatchMaker.this.userLikedMedia.add(id);
+                }
+
+                for (DataSnapshot snap: userDisikedSnapshot.getChildren())
+                {
+                    Long id = Long.parseLong(snap.getKey());
+                    MatchMaker.this.userDislikedMedia.add(id);
+                }
+
+                for (DataSnapshot snap: userUnseenSnapshot.getChildren())
+                {
+                    Long id = Long.parseLong(snap.getKey());
+                    MatchMaker.this.userUnseenMedia.add(id);
+                }
+
+                Log.i("updateInfo", "Starting getPotentialMatches");
+                MatchMaker.this.getPotentialMatches(MatchMaker.this.userLikedMedia);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.i("Error in [updateInfo]", databaseError.getDetails());
+            }
         });
     }
 
-    public String check ()
+    private void getPotentialMatches (final ArrayList<Long> userLikedMedia)
     {
+        Log.i("getPotentialMatches", "Started");
+        DataSnapshot dataSnapshot = this.userDataSnapshot.child("users");
+        for (DataSnapshot snap : dataSnapshot.getChildren())
+        {
+            boolean inserted = false;
+            DataSnapshot shot = snap.child("Liked Media");
+            for (DataSnapshot dataSnap : shot.getChildren())
+            {
+                if (MatchMaker.this.userLikedMedia.contains(Long.parseLong(dataSnap.getKey()))&&inserted==false)//Maybe Like Example
+                {
+                    MatchMaker.this.potentialUsers.add(snap.getKey());
+                    Log.i("Potential User", snap.getKey());
+                    inserted = true;
+                }
+            }
+            Log.i("[getPotentialMatches]", "Got Matches, "+this.potentialUsers.get(0));
+        }
+
+       /* usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (final DataSnapshot snap : dataSnapshot.getChildren())
+                {
+                    boolean inserted = false;
+                    DataSnapshot shot = snap.child("Liked Media");
+                    for (DataSnapshot dataSnap : shot.getChildren())
+                    {
+                        if (MatchMaker.this.userLikedMedia.contains(Long.parseLong(dataSnap.getKey()))&&inserted==false)//Maybe Like Example
+                        {
+                            MatchMaker.this.potentialUsers.add(snap.getKey());
+                            Log.i("Potential User", snap.getKey());
+                            inserted = true;
+                        }
+                    }
+                }
+            }*/
+
+            /*Query query = snap.getRef().child("Liked Media").orderByKey().limitToFirst(10);
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Log.i("Check", "Entered onDataChanged");
+                    for (DataSnapshot shot: dataSnapshot.getChildren())
+                    {
+                        boolean inserted = false;
+                        if (userLikedMedia.contains(Long.parseLong(shot.getKey()))&&!inserted)
+                        {
+                            MatchMaker.this.potentialUsers.add(snap.getKey());
+                            Log.i("[getPotentialUsers]", "Added Potential User");
+                            inserted = !inserted;
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.i("Error in [addListenerForSingleValueEvent] at [potentialUsersRef] at Second Inner Class", databaseError.getDetails());
+                }
+            });*/
+            //WHILE!!!!!
+
+
+           /* @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.i("Error in [addListenerForSingleValueEvent] at [potentialUsersRef]", databaseError.getDetails());
+            }
+        });*/
+    }
+    //Do this with OrderByKey and then checking, limitToFirst(10)
+
+
+    public String check () throws InterruptedException {
+        Thread.sleep(3000);
         return this.userLikedMedia.get(this.userLikedMedia.size()-1).toString();
     }
 }

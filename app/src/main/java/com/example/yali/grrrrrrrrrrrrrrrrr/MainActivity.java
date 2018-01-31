@@ -41,17 +41,17 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    static ArrayList<Media> list = null;
-    ProgressBar progressBar;
-    CardStackView cardStackView;
-    MediaCardAdapter adapter;
+    private static ArrayList<Media> list = null;
+    private ProgressBar progressBar;
+    private CardStackView cardStackView;
+    private MediaCardAdapter adapter;
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
-    long currentPage;
-    boolean inPagination = false;
-    boolean downloadMore = true;
-    MatchMaker matcher;
-    //Color Palette and stuff
+    private FirebaseUser user;
+    private long currentPage;
+    protected boolean inPagination = false;
+    private boolean downloadMore = true;
+    private MatchMaker matcher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
+        this.user = mAuth.getCurrentUser();
         mAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("Value Event Listener at [userRef] Error", databaseError.toException().toString());
             }
         });
-        matcher = new MatchMaker(user);
 
         setup();
         reload();
@@ -130,7 +129,9 @@ public class MainActivity extends AppCompatActivity {
                 downloadMore = !downloadMore;
                 break;
             case R.id.mainMenuReccomendations:
-                Toast.makeText(getApplicationContext(), matcher.check(), Toast.LENGTH_LONG).show();
+                matcher = new MatchMaker(this.user);
+                matcher.makeMatch();
+                break;
         }
         return true;
     }
@@ -259,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
                 adapter = null;
                 downloadForFirstUse();
             }
-        }, 3000);
+        }, 4000);
     }
 
     private void paginate ()

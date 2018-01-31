@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Grrrrrrrrrrrrrrrrr</string>
     <string name="firebasePageNumber">Page Number</string>
+
+    <!--Firebase Strings-->
+    <string name="userLikedMedia">Liked Media</string>
+
 </resources>
