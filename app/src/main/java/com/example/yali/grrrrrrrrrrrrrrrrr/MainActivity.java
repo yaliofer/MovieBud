@@ -272,6 +272,29 @@ public class MainActivity extends AppCompatActivity {
         Log.i("Media starting", "Paginate");
     }
 
+    public void badLink ()
+    {
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(this);
+        builder.setTitle("Error");
+        builder.setCancelable(false);
+        builder.setMessage("Error in retrieveing the media. please try again soon");
+        builder.setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                paginate();
+            }
+        });
+        builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     private void downloadForFirstUse()
     {
         GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, this, currentPage);
@@ -339,7 +362,12 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             numMovies = 15;
             numTV = 15;
             //Handle Movies
-            ans = readURL(prepLink(params[0], this.currentPage));//params[0]
+            String link = prepLink(params[0], this.currentPage);
+            if (link.endsWith("0"))
+            {
+                this.mainActivity.badLink();
+            }
+            ans = readURL(link);//params[0]
             Log.i("doInBackground in [GetMediaTask]", "Downloaded Movies JSON");
             //Parse the JSON
             JSONObject parentObject = new JSONObject(ans);
