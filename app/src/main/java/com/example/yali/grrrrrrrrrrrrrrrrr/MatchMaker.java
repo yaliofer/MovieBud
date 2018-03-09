@@ -28,9 +28,11 @@ public class MatchMaker
     private ArrayList <Long> userDislikedMedia;
     private ArrayList <Long> userUnseenMedia;
     private ArrayList <String> potentialUsers;
+    private ArrayList <String> mediaToWatch;
+    private ReccomendationActivity activity;
 
     //Constructors
-    public MatchMaker (final FirebaseUser user)
+    public MatchMaker (final FirebaseUser user, ReccomendationActivity activity)
     {
         this.user = user;
         FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
@@ -43,6 +45,8 @@ public class MatchMaker
         this.userDislikedMedia = new ArrayList<>();
         this.userUnseenMedia = new ArrayList<>();
         this.potentialUsers = new ArrayList<>();
+        this.mediaToWatch = new ArrayList<>();
+        this.activity = activity;
     }
 
     public void makeMatch ()
@@ -156,6 +160,7 @@ public class MatchMaker
         this.match = bestMatchID;
         MatchMaker.this.userRef.child("Match").setValue(bestMatchID);
         MatchMaker.this.userRef.child("Match Percent").setValue(maxMatchPercent);
+        this.getMoviesToWatch();
     }
 
     private double getPercentOfMatch (ArrayList<Long> liked, ArrayList<Long> disliked)
@@ -173,7 +178,7 @@ public class MatchMaker
     }
 
     private int getPotentialMatchPercent (ArrayList <Long> liked, ArrayList <Long> disliked)
-    {//Gets the checked user's liekd and disliked and return the number of movies both users has seen
+    {//Gets the checked user's liked and disliked and return the number of movies both users has seen
         int sameMedia = 0;
         for (Long lng : liked)
         {
@@ -218,8 +223,22 @@ public class MatchMaker
         return sameDisliked;
     }
 
-    /*public String check () throws InterruptedException {
-        Thread.sleep(3000);
-        return this.userLikedMedia.get(this.userLikedMedia.size()-1).toString();
-    }*/
+    private void getMoviesToWatch ()
+    {
+        ArrayList <String> media = new ArrayList<>();
+        ArrayList <Long> userViewed = new ArrayList<>();
+        DataSnapshot matchLikedShot = dbDataSnapshot.child("users").child(this.match).child("Liked Media");
+        userViewed.addAll(this.userLikedMedia);
+        userViewed.addAll(this.userDislikedMedia);
+        for (DataSnapshot snap : matchLikedShot.getChildren())
+        {
+            Long id = Long.parseLong(snap.getKey());
+            if (!userViewed.contains(id))
+            {
+                media.add(snap.getValue(String.class));
+            }
+        }
+        this.mediaToWatch = media;
+        this.activity.updateListView(media);
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.yali.grrrrrrrrrrrrrrrrr;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -129,8 +130,8 @@ public class MainActivity extends AppCompatActivity {
                 downloadMore = !downloadMore;
                 break;
             case R.id.mainMenuReccomendations:
-                matcher = new MatchMaker(this.user);
-                matcher.makeMatch();
+                Intent intent = new Intent(MainActivity.this, ReccomendationActivity.class);
+                startActivity(intent);
                 break;
         }
         return true;
