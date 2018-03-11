@@ -23,10 +23,8 @@ public class ReccomendationActivity extends AppCompatActivity {
 
     private ProgressBar progressBar;
     private ListView listView;
-    private DataSnapshot dataSnapshot;
     private FirebaseUser user;
     private FirebaseDatabase mDatabase;
-    private DatabaseReference dbRef;
     private MatchMaker matchMaker;
     private TextView recText;
 
@@ -42,7 +40,6 @@ public class ReccomendationActivity extends AppCompatActivity {
         recText.setVisibility(View.GONE);
         user = FirebaseAuth.getInstance().getCurrentUser();
         mDatabase = FirebaseDatabase.getInstance();
-        dbRef = mDatabase.getReference();
         matchMaker = new MatchMaker(user, this);
         matchMaker.makeMatch();
 
