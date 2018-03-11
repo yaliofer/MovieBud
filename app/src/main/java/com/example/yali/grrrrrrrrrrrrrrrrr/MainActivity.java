@@ -15,7 +15,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -42,7 +41,6 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static ArrayList<Media> list = null;
     private ProgressBar progressBar;
     private CardStackView cardStackView;
     private MediaCardAdapter adapter;
@@ -52,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private long currentPage;
     protected boolean inPagination = false;
     private boolean downloadMore = true;
-    private MatchMaker matcher;
+    private DatabaseReference userRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -81,19 +79,19 @@ public class MainActivity extends AppCompatActivity {
         this.mDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = this.mDatabase.getReference();
         DatabaseReference userRef = databaseReference.child("users").child(user.getUid());
-        userRef.addValueEventListener(new ValueEventListener() {
+        this.userRef = userRef;
+        mDatabase.goOnline();
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 DataSnapshot snap =  dataSnapshot.child(s);
                 currentPage = snap.getValue(long.class);
                 Log.i("Value Event Listener at [userRef]", "Changed Data");
-                //Listener starts only AFTER the mediatask already started
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.i("Value Event Listener at [userRef]", "Error");
-                Log.i("Value Event Listener at [userRef] Error", databaseError.toException().toString());
+                Log.e("Error in [getPageNumber]", databaseError.toString());
             }
         });
 
@@ -114,6 +112,13 @@ public class MainActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
         return true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        DatabaseReference pageNumberRef = this.userRef.child("Page Number");
+        pageNumberRef.setValue(currentPage);
     }
 
     @Override
@@ -183,7 +188,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void setup ()
     {
-        MainActivity.list = new ArrayList<>(30);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         cardStackView = (CardStackView)findViewById(R.id.cardStackView);
         cardStackView.setCardEventListener(new CardStackView.CardEventListener()
