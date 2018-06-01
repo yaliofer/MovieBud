@@ -99,7 +99,7 @@ public class MatchMaker
     }
 
     private void getPotentialMatches (final ArrayList<Long> userLikedMedia)
-    {
+    {//ADD MINIMUM OF 20 MOVIES
         Log.i("getPotentialMatches", "Started");
         DataSnapshot dataSnapshot = this.dbDataSnapshot.child("users");
         for (DataSnapshot snap : dataSnapshot.getChildren())
@@ -115,10 +115,21 @@ public class MatchMaker
                     inserted = true;
                 }
             }
-            Log.i("[getPotentialMatches]", "Got Matches, "+this.potentialUsers.get(0));
         }
         //Do this with OrderByKey and then checking, limitToFirst(10)
-        this.getBestMatch();
+        if (this.potentialUsers.size()>0)
+        {
+            this.getBestMatch();
+        }
+        else
+        {
+            ArrayList <String> insert = new ArrayList<>();
+            insert.add("There isn't enough media in your profile to match you to someone!");
+            insert.add("Please add more media to your profile to get matches");
+            this.activity.updateListView(insert);
+        }
+        //IF THERE IS NO POTENTIAL MATCHES, GO STRAIGHT TO THE LIST VIEW UPDATE AND ADD AN ITEM THAT SAYS THAT
+        //THERE ISNT ENOUGH MATERIALS AND THE USER SHOULD PLAY WITH IT MORE
     }
 
     private void getBestMatch ()

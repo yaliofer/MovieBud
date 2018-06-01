@@ -1,5 +1,6 @@
 package com.example.yali.grrrrrrrrrrrrrrrrr;
 
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -53,9 +54,20 @@ public class ReccomendationActivity extends AppCompatActivity {
         recText.setVisibility(View.VISIBLE);
         if (media.size()==0)
         {
-            media.add("Nothing");
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Reccomendations");
+            builder.setMessage("There are currently no media reccomended to you. \n" +
+                    "Please play with the UI for a bit longer or wait fro new reccomendations to pop up");
+            builder.setPositiveButton("Got it!", null);
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
-        ArrayAdapter <String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, media);
-        listView.setAdapter(adapter);
+        else
+        {
+            ArrayAdapter <String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, media);
+            listView.setAdapter(adapter);
+        }
     }
 }
+

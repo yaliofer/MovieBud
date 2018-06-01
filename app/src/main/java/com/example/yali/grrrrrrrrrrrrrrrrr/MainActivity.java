@@ -47,10 +47,12 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
     private FirebaseUser user;
-    private long currentPage;
+    protected long currentPage;
     protected boolean inPagination = false;
     private boolean downloadMore = true;
     private DatabaseReference userRef;
+    private DatabaseReference pageNumberRef;
+    private DataSnapshot userSnapShot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -80,10 +82,12 @@ public class MainActivity extends AppCompatActivity {
         DatabaseReference databaseReference = this.mDatabase.getReference();
         DatabaseReference userRef = databaseReference.child("users").child(user.getUid());
         this.userRef = userRef;
+        this.pageNumberRef = userRef.child("Page Number");
         mDatabase.goOnline();
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                MainActivity.this.userSnapShot = dataSnapshot;
                 DataSnapshot snap =  dataSnapshot.child(s);
                 currentPage = snap.getValue(long.class);
                 Log.i("Value Event Listener at [userRef]", "Changed Data");
@@ -137,6 +141,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.mainMenuReccomendations:
                 Intent intent = new Intent(MainActivity.this, ReccomendationActivity.class);
                 startActivity(intent);
+                break;
+            case R.id.mainMenuRefresh:
+                downloadForFirstUse();
                 break;
         }
         return true;
@@ -272,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
     {
         cardStackView.setPaginationReserved();
         this.inPagination = true;
-        GetMediaTask mediaTask = new GetMediaTask (progressBar, cardStackView, this, currentPage);
+        GetMediaTask mediaTask = new GetMediaTask (progressBar, cardStackView, this, currentPage, this.pageNumberRef, this.userRef);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
         Log.i("Media starting", "Paginate");
     }
@@ -302,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void downloadForFirstUse()
     {
-        GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, this, currentPage);
+        GetMediaTask mediaTask =  new GetMediaTask(progressBar, cardStackView, this, currentPage, this.pageNumberRef, this.userRef);
         mediaTask.execute(Media.getPopularMovieQuery(), Media.getPopularTVQuery(), Media.getConfigurationQuery());
     }
 
@@ -315,14 +322,31 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
     private CardStackView cardStackView;
     private MainActivity mainActivity;
     private long currentPage;
+    private DatabaseReference pageNumberRef;
+    private DataSnapshot userShot;
+    private ArrayList <Integer> markedMedia;
 
-     GetMediaTask(ProgressBar pb, CardStackView csv, MainActivity ma, long page)
+     GetMediaTask(ProgressBar pb, CardStackView csv, MainActivity ma, long page, DatabaseReference pageNumberRef, DatabaseReference userRef)
      {
         super();
         this.progressBar = pb;
         this.cardStackView = csv;
         this.mainActivity = ma;
         this.currentPage = page;
+        this.pageNumberRef = pageNumberRef;
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                GetMediaTask.this.userShot = dataSnapshot;
+                GetMediaTask.this.markedMedia = new ArrayList<>();
+                GetMediaTask.this.updateMarkedMedia(dataSnapshot);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
      }
 
     @Override
@@ -389,6 +413,7 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             if (parentObject.has("results"))
             {
                 results = parentObject.getJSONArray("results");
+                Log.i("Results", results.toString());
                 for (i=0;i<30&&results.length()>0&&i<numMovies;i++)
                 {
                     obj = (JSONObject) results.get(i);
@@ -404,27 +429,46 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
                     oof = obj.get("vote_average");
                     ids = (JSONArray) obj.get("genre_ids");
                     genre = setGenre(ids, genres);
-                    if (oof instanceof Integer)
+                    Log.i("Check", "Fine Before Build");
+                    if (!markedMedia.contains(idRaw))
                     {
-                        ratingRaw = (int)obj.get("vote_average");
-                        temp = new Media ("movie", title, (long)idRaw, path, (double)ratingRaw, genre,language);
+                        if (oof instanceof Integer)
+                        {
+                            ratingRaw = (int)obj.get("vote_average");
+                            temp = new Media ("movie", title, (long)idRaw, path, (double)ratingRaw, genre,language);
+                            Log.i("Check", "Fine After Build");
+                        }
+                        else
+                        {
+                            rating = (double)obj.get("vote_average");
+                            temp = new Media ("movie", title, (long)idRaw, path, rating, genre, language);
+                            Log.i("Check", "Fine After Build");
+                        }
+                        Log.i("doInBackground in [GetMediaTask]", "genre-"+genre);
                     }
-                    else
-                    {
-                        rating = (double)obj.get("vote_average");
-                        temp = new Media ("movie", title, (long)idRaw, path, rating, genre, language);
-                    }
-                    Log.i("doInBackground in [GetMediaTask]", "genre-"+genre);
                     //Building Poster URL
-                    String query;
-                    query = Media.getBaseURL()+Media.getPosterSize()+temp.getPosterPath();
-                    //Downloading the Image
-                    bitmap = downlaodBitmap(query);
-                    //Adding image to object
-                    temp.setPoster(bitmap);
-                    Log.i("doInBackground in [GetMediaTask]", "Downloaded Poster for "+temp.getTitle()+ " in place "+(ret.size()+1));
-                    //Add To ArrayList
-                    ret.add(temp);
+                    if (!markedMedia.contains(idRaw))
+                    {
+                        if (oof instanceof Integer)
+                        {
+                            ratingRaw = (int)obj.get("vote_average");
+                            temp = new Media ("movie", title, (long)idRaw, path, (double)ratingRaw, genre,language);
+                        }
+                        else
+                        {
+                            rating = (double)obj.get("vote_average");
+                            temp = new Media ("movie", title, (long)idRaw, path, rating, genre, language);
+                        }
+                        String query;
+                        query = Media.getBaseURL()+Media.getPosterSize()+temp.getPosterPath();
+                        //Downloading the Image
+                        bitmap = downlaodBitmap(query);
+                        //Adding image to object
+                        temp.setPoster(bitmap);
+                        Log.i("doInBackground in [GetMediaTask]", "Downloaded Poster for "+temp.getTitle()+ " in place "+(ret.size()+1));
+                        //Add To ArrayList
+                        ret.add(temp);
+                    }
                 }
                 Log.i("doInBackground in [GetMediaTask]", "Added all the Movies");
             }
@@ -490,7 +534,8 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
         //MainActivity.updateList(media);
         //Add Methods to Filter Already Seen Movies
         mainActivity.finalize(media);
-        mainActivity.updatePageNumber(this.currentPage);
+        pageNumberRef.setValue(mainActivity.currentPage+1);
+        mainActivity.currentPage++;
         mainActivity.inPagination = false;
         cardStackView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);
@@ -619,6 +664,28 @@ class GetMediaTask extends AsyncTask <String, Integer, ArrayList<Media>>
             e.printStackTrace();
         }
         return genre;
+    }
+
+    private void updateMarkedMedia(DataSnapshot shot)
+    {
+        DataSnapshot liked = shot.child("Liked Media");
+        DataSnapshot disliked = shot.child("Disliked Media");
+        DataSnapshot unseen = shot.child("Unseen");
+        for (DataSnapshot snap: liked.getChildren())
+        {
+            int id = Integer.parseInt(snap.getKey());
+            this.markedMedia.add(id);
+        }
+        for (DataSnapshot snap: disliked.getChildren())
+        {
+            int id = Integer.parseInt(snap.getKey());
+            this.markedMedia.add(id);
+        }
+        for (DataSnapshot snap: unseen.getChildren())
+        {
+            int id = Integer.parseInt(snap.getKey());
+            this.markedMedia.add(id);
+        }
     }
 
 }

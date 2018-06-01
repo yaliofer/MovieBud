@@ -7,12 +7,6 @@
             android:id="@+id/mainMenuReccomendations"
             android:title="Get Reccomendations" />
         <item
-            android:id="@+id/mainMenuFilter"
-            android:icon="@drawable/overlay_left_image"
-            android:title="Filter"
-            support:showAsAction="never"
-            />
-        <item
             android:id="@+id/mainMenuAccount"
             android:icon="@drawable/ic_account_circle_black_24dp"
             android:title="Account"
