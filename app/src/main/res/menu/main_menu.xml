@@ -12,13 +12,6 @@
             android:title="Account"
             support:showAsAction="always" />
         <item
-            android:id="@+id/mainMenuReverse"
-            android:icon="@drawable/ic_restore_black_24dp"
-            android:title="Reverse"
-            android:enabled="true"
-            support:showAsAction="always"
-            />
-        <item
             android:title="Refresh"
             android:id="@+id/mainMenuRefresh"/>
 

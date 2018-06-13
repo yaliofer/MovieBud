@@ -129,9 +129,6 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId())
         {
-            case R.id.mainMenuReverse:
-                cardStackView.reverse();
-                break;
             case R.id.mainMenuAccount:
                 askToLogOut();
                 break;

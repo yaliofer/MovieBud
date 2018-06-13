@@ -247,6 +247,7 @@ public class MatchMaker
             if (!userViewed.contains(id))
             {
                 media.add(snap.getValue(String.class));
+                //Add ArrayList of ID's
             }
         }
         this.mediaToWatch = media;

@@ -47,7 +47,14 @@ public class LogInActivity extends AppCompatActivity {
             @Override
             public void onClick(View v)
             {
-                startLogin();
+                if (emailLogin.getText()!=null&&passwordLogin.getText()!=null)
+                {
+                    startLogin();
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Error in Log-In", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
